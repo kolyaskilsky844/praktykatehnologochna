@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Beautiful Test App</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #6a11cb, #2575fc);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 600px;
+      width: 90%;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+      padding: 30px;
+      text-align: center;
+      animation: fadeIn 1s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .button {
+      display: inline-block;
+      margin: 10px;
+      padding: 12px 20px;
+      background-color: #ff7eb3;
+      color: white;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 10px rgba(255, 126, 179, 0.5);
+    }
+    .button:active {
+      transform: scale(0.95);
+    }
+    .question {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      color: #ffe0f0;
+    }
+    .option {
+      display: block;
+      margin: 10px auto;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+    .result {
+      font-size: 24px;
+      font-weight: bold;
+      color: #a0ffaf;
+    }
+    h1 {
+      font-size: 28px;
+      margin-bottom: 20px;
+      color: #fff;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+    }
+    .timer {
+      font-size: 18px;
+      margin-top: 10px;
+      color: #ffd700;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="app">
+    <div id="menu">
+      <h1>Ласкаво просимо на наш тест </h1>
+      <button class="button" onclick="startTest(1)">Тест з математики</button>
+      <button class="button" onclick="startTest(2)">Тест з історії</button>
+      <button class="button" onclick="startTest(3)">Міксовані питання</button>
+      <button class="button" onclick="startTest(4)">Географічний тест</button>
+    </div>
+
+    <div id="test" style="display: none;">
+      <div class="question" id="questionText"></div>
+      <div class="timer" id="timerText"></div>
+      <div id="options"></div>
+    </div>
+
+    <div id="result" style="display: none;">
+      <div class="result" id="resultText"></div>
+      <button class="button" onclick="showMenu()">Повернутись до меню</button>
+    </div>
+  </div>
+
+  <script>
+    let currentTest = null;
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let timer;
+    let timeLeft = 15;
+
+    const tests = {
+      1: [
+        { question: "2 + 2 = ?", options: ["3", "4", "5"], correct: "4" },
+        { question: "5 * 5 = ?", options: ["10", "25", "30"], correct: "25" },
+        { question: "Квадратний корінь з 16 = ?", options: ["3", "4", "6"], correct: "4" }
+      ],
+      2: [
+        { question: "в яких роках була друга світова війна ?", options: ["1939-1945", "1920-1930", "1914-1918"], correct: "1939-1945" },
+        { question: "Хто перший президент сша?", options: ["Авраам Лінкольн", "Джордж Вашингтон", "Том Джеферсон"], correct: "Джордж Вашингтон" }
+      ],
+      3: [
+        { question: "що таке  H2O?", options: ["Повітря", "Вода", "Перекись водню"], correct: "Вода" },
+        { question: "Яка планета є четвертою від сонця?", options: ["Марс", "Венера", "Земля"], correct: "Марс" }
+      ],
+      4: [
+        { question: "Яка столиця Франції ?", options: ["Лондон", "Київ", "Париж"], correct: "Paris" },
+        { question: "який континент є найбільший?", options: ["Азія", "Африка", "Європа"], correct: "Азія" }
+      ]
+    };
+
+    function showMenu() {
+      document.getElementById("menu").style.display = "block";
+      document.getElementById("test").style.display = "none";
+      document.getElementById("result").style.display = "none";
+      currentQuestionIndex = 0;
+      score = 0;
+    }
+
+    function startTest(testId) {
+      currentTest = tests[testId];
+      document.getElementById("menu").style.display = "none";
+      document.getElementById("test").style.display = "block";
+      showQuestion();
+    }
+
+    function showQuestion() {
+      clearInterval(timer);
+      timeLeft = 15;
+      const question = currentTest[currentQuestionIndex];
+      document.getElementById("questionText").innerText = question.question;
+      document.getElementById("timerText").innerText = `Time left: ${timeLeft}s`;
+
+      const optionsContainer = document.getElementById("options");
+      optionsContainer.innerHTML = "";
+
+      question.options.forEach(option => {
+        const button = document.createElement("button");
+        button.className = "button option";
+        button.innerText = option;
+        button.onclick = () => checkAnswer(option);
+        optionsContainer.appendChild(button);
+      });
+
+      timer = setInterval(() => {
+        timeLeft--;
+        document.getElementById("timerText").innerText = `Time left: ${timeLeft}s`;
+
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          checkAnswer(null); // Якщо час вичерпано, відповідь не вибрана.
+        }
+      }, 1000);
+    }
+
+    function checkAnswer(selectedOption) {
+      clearInterval(timer);
+      const question = currentTest[currentQuestionIndex];
+      if (selectedOption === question.correct) {
+        score++;
+      }
+
+      currentQuestionIndex++;
+
+      if (currentQuestionIndex < currentTest.length) {
+        showQuestion();
+      } else {
+        showResult();
+      }
+    }
+
+    function showResult() {
+      document.getElementById("test").style.display = "none";
+      document.getElementById("result").style.display = "block";
+      document.getElementById("resultText").innerText = `Твої відповіді ${score} з ${currentTest.length} вірні!`;
+    }
+
+    showMenu();
+  </script>
+</body>
+</html>
